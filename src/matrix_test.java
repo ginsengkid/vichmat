@@ -11,14 +11,13 @@ public class matrix_test {
         }
 
         mat.print();
-        System.out.println();
-
+        System.out.println("123132");
         int result = mat.makeTriangle();
         mat.print();
         System.out.println();
         getResult(result);
         if(result == 4) {
-            result = mat.checkSoultions();
+            result = mat.checkSolutions();
             if(result != 4)
                 getResult(result);
             else {

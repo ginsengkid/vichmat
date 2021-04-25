@@ -57,17 +57,17 @@ public class matrix {
 
             needed_line = i;
             if (compareToZero(a[i][i])) {
-                needed_line = find_not_zero_element(i);
+                needed_line = findNotZeroElement(i);
                 if(needed_line == -1)
                     return (3);
-                swap_lines(needed_line, i);
+                swapLines(needed_line, i);
             }
 
             //"зануление столбца"
             k = i;
             for (int j = i; j < rawAmount; j ++) {
                 multiplier = a[k][i-1]/a[i-1][i-1];
-                multiple_and_subtraction_of_line(multiplier, i, j);
+                multiplicationAndSubtractionOfLine(multiplier, i, j);
                 k++;
             }
         }
@@ -75,7 +75,7 @@ public class matrix {
     }
 
 
-    private int find_not_zero_element(int i) {
+    private int findNotZeroElement(int i) {
         if (!compareToZero(a[i][i])) return i;
         for (int q = i + 1; q < rawAmount - i; q++)
             if (!compareToZero(a[q][i]))
@@ -89,14 +89,14 @@ public class matrix {
     }
 
 
-    private void swap_lines (int i, int q){
+    private void swapLines(int i, int q){
         double[] temp = a[q];
         a[q] = a[i];
         a[i] = temp;
     }
 
     // k - номер прохода, i - номер строки.
-    private void multiple_and_subtraction_of_line(double multiplier, int k, int i){
+    private void multiplicationAndSubtractionOfLine(double multiplier, int k, int i){
         for (int j = 0; j < columnAmount; j++){
             a[i][j] -= (multiplier * a[k-1][j]);
             if (compareToZero(a[i][j]))
@@ -105,7 +105,7 @@ public class matrix {
     }
 
 
-    public int checkSoultions() {
+    public int checkSolutions() {
         if (compareToZero(a[rawAmount-1][columnAmount-2]))
             if (compareToZero(a[rawAmount-1][columnAmount-1]))
                 return 1;    // 0 = 0
@@ -130,5 +130,7 @@ public class matrix {
         }
         return final_array; //имеет единсвенное решение
     }
+
+
 
 }
