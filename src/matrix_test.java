@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 public class matrix_test {
     public static void main(String[] args) {
         matrix mat = new matrix();
+        /*
         try {
             mat.init("D:\\file.txt");
         }
@@ -11,10 +12,8 @@ public class matrix_test {
         }
 
         mat.print();
-        System.out.println("123132");
         int result = mat.makeTriangle();
         mat.print();
-        System.out.println();
         getResult(result);
         if(result == 4) {
             result = mat.checkSolutions();
@@ -22,9 +21,22 @@ public class matrix_test {
                 getResult(result);
             else {
                 double[] answer = mat.findSolutions();
-                printMatrix(answer);
+                printArray(answer);
             }
         }
+         */
+
+        System.out.println("another method");
+        mat = new matrix();
+        try {
+            mat.init("D:\\file.txt");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("FILE NOT FOUND!!!");
+        }
+        mat.print();
+        double[] array = mat.solveByIterations();
+        printArray(array);
 
     }
 
@@ -38,7 +50,7 @@ public class matrix_test {
         }
     }
 
-    public static void printMatrix(double [] matrix) {
+    public static void printArray(double [] matrix) {
         for (double v : matrix) System.out.printf("%15.6E", v);
         System.out.println();
     }
