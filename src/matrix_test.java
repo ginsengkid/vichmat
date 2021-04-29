@@ -3,7 +3,7 @@ import java.io.FileNotFoundException;
 public class matrix_test {
     public static void main(String[] args) {
         matrix mat = new matrix();
-        /*
+
         try {
             mat.init("D:\\file.txt");
         }
@@ -24,7 +24,7 @@ public class matrix_test {
                 printArray(answer);
             }
         }
-         */
+
 
         System.out.println("another method");
         mat = new matrix();
@@ -35,8 +35,14 @@ public class matrix_test {
             System.out.println("FILE NOT FOUND!!!");
         }
         mat.print();
-        double[] array = mat.solveByIterations();
-        printArray(array);
+
+        if (mat.checkForZeros()){
+            double[] array = mat.solveByIterations(mat.checkSCC());
+            printArray(array);
+        }
+        else{
+            /////swapping lines to get not zero line/////
+        }
 
     }
 
