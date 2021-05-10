@@ -6,8 +6,10 @@ import java.util.regex.*;
 public class matrix {
     private double[][] array;
     private int rowAmount, columnAmount;
-    double epsilon;
-    double [] sums;
+    private double epsilon;
+    private double [] sums;
+    private int [] notNullCombination;
+    private int[] combination;
 
 
     private void create(int k, int l) {
@@ -39,15 +41,19 @@ public class matrix {
         columnAmount = Integer.parseInt(sn[1]) + 1;
         epsilon = Math.pow(10, -Double.parseDouble(sn[2]) - 1);
         this.create(rowAmount, columnAmount);
+        notNullCombination = new int[rowAmount];
+        combination = notNullCombination;
         int i, j;
         for (i = 0; i < rowAmount; i++) {
             str = scan.nextLine();
             sn = pat.split(str);
+            notNullCombination[i] = i;                 //init combintaion array
             for (j = 0; j < columnAmount; j++)
                 array[i][j] = Double.parseDouble(sn[j]);
         }
         scan.close();
-        sums = sumOfLines();
+        sums = sumOfLines(array);
+
     }
 
 
@@ -56,6 +62,11 @@ public class matrix {
         int k;
         int needed_line;
         //finding and swapping not zero line
+        if (compareToZero(array[0][0])){
+            needed_line = findNotZeroElement(0);
+            if (needed_line == -1) return 3;
+            swapLines(needed_line, 0);
+        }
         for (int i = 1; i < rowAmount; i++) {
 
             needed_line = i;
@@ -136,21 +147,12 @@ public class matrix {
 
 
     //iterative method//
-
-    public boolean checkDiagonalForZero(){
-        int counter = 0;
-        for (int i = 0; i < rowAmount; i++) {
-            if (array[i][i] == 0)
-                counter++;
-        }
-        return counter == rowAmount;
-    }
-
     /*
     SCC - sufficient condition for convergence
     (predominance of the diagonal elements)
     */
 
+    //проверка на наличе 0 на диагонали для нашей изначальной системы
     public boolean checkForZeros() {
         for (int i = 0; i < rowAmount; i++)
             if (compareToZero(array[i][i]))
@@ -158,13 +160,23 @@ public class matrix {
         return true;
     }
 
-    public boolean checkSCC(){
-        boolean strictlyMore = false;
+    //проверка на наличе 0 на диагонали для нашей изначальной с учетом перестановки системы
+    private boolean checkForZeros(int iqwe) {
+        double[][] matrix = replaceWithCombination();
+        for (int i = 0; i < rowAmount; i++)
+            if (compareToZero(matrix[i][i]))
+                return false;
+        return true;
+    }
 
+    //проверка ДУС нашей изначальной системы
+    public boolean checkSCC(){
+        //if (!checkForZeros()) return false;
+        boolean strictlyMore = false;
         for (int i = 0; i < rowAmount; i++) {
-            double sum = Math.abs(array[i][i]) - sums[i];
-            if (sum > 0) {          //нужна ли проверка на точность (?)
-                if (sum >= 0)       // (?)
+            double sum =  Math.abs(sums[i])  - Math.abs(array[i][i]) - Math.abs(array[i][i]);
+            if (sum < 0){
+                if (sum <= 0)
                     strictlyMore = true;
             }
             else return false;
@@ -172,48 +184,152 @@ public class matrix {
         return strictlyMore;
     }
 
-    public double[] sumOfLines(){
-        double[] temp = new double[rowAmount];
-        for (int i = 0; i < rowAmount; i ++) {
-            for (int j = 0; j < columnAmount - 1; j++)
-                temp[i] += Math.abs(array[i][j]);
+    //проверка ДУС изначальной системы с выполненной подстановкой
+    private boolean checkSCC(int temp){
+        if (!checkForZeros(1)) return false;
+        notNullCombination = combination;
+        double[][] matrix = replaceWithCombination();
+        int len = matrix.length;
+        boolean strictlyMore = false;
+
+        for (int i = 0; i < len; i++) {
+            double sum =  Math.abs(sums[i])  - Math.abs(matrix[i][i]) - Math.abs(matrix[i][i]);
+            if (sum < 0){
+                if (sum <= 0)
+                    strictlyMore = true;
+            }
+            else return false;
+        }
+        return strictlyMore;
+    }
+
+    //поиск сумм строк матрицы
+    private double[] sumOfLines(double[][] matrix){
+        double[] temp = new double[matrix.length];
+        for (int i = 0; i < matrix.length; i ++) {
+            for (int j = 0; j < matrix.length; j++)
+                temp[i] += Math.abs(matrix[i][j]);
         }
         return temp;
     }
 
-    public double[] solveByIterations(boolean needControl){
+    //решение без контроля
+    public double[] solveByIterations(){
         double[] result = new double[rowAmount];
-        boolean isOk = true;
-        double x, delta = Double.MAX_VALUE;
-        int counter = 0;
+        double x, summary;
         do {
             x = result[0];
-            double summary;
-
             for (int i = 0; i < rowAmount; i++){
-                summary = 0;
-                for (int j = 0; j < i; j ++)
-                    summary += result[j] * array[i][j];
+                summary = array[i][columnAmount - 1];
+                for (int j = 0; j < rowAmount; j++)
+                    if (j != i)
+                        summary -= result[j] * array[i][j];
 
-                for (int j = i + 1; j < rowAmount; j++)
-                    summary += result[j] * array[i][j];
-
-                result[i] = (array[i][columnAmount - 1] - summary) / array[i][i];
+                result[i] = summary/array[i][i];
             }
-            counter++;
-
-            if (needControl){
-                if (counter >= 6){
-                    double temp = Math.abs(result[0] - x);
-                    if (delta >= temp) delta = temp;
-                    else isOk = false;
-                }
-                if (counter == 10) needControl = false;
-            }
-        } while (Math.abs(result[0] - x) >= epsilon && isOk);
-
-        System.out.println(counter);
-        if (!isOk) return null;
+        } while (Math.abs(result[0] - Math.abs(x)) >= epsilon);
         return result;
+    }
+
+    //решение с контролем
+    public double[] solveByIterationsWithControl(){
+        double[] result = new double[rowAmount];
+        double x, summary;
+        double delta = 0;
+        double localMaximum = Double.MIN_VALUE;
+        int i, j;
+
+        //проверка системы на сходимость через проверку первых 10 итераций
+        for (int q = 0; q < 10; q++){
+            x = result[0];
+
+            for (i = 0; i < rowAmount; i++){
+                summary = array[i][columnAmount - 1];
+                for (j = 0; j < rowAmount; j++)
+                    if (j != i)
+                        summary -= result[j] * array[i][j];
+
+                result[i] = summary/array[i][i];
+            }
+
+            delta = Math.abs(x) - Math.abs(result[0]);
+            if (q > 5){
+                if (delta > localMaximum)
+                    localMaximum = delta;
+            }
+        }
+
+        //если система не сходится, то возвращаем null
+        if (localMaximum > epsilon) return null;
+
+        //если система сходится - решаем дальше
+        do {
+            x = result[0];
+            for (i = 0; i < rowAmount; i++){
+                summary = array[i][columnAmount - 1];
+                for (j = 0; j < rowAmount; j++)
+                    if (j != i)
+                        summary -= result[j] * array[i][j];
+
+                result[i] = summary/array[i][i];
+            }
+        } while (Math.abs(result[0] - Math.abs(x)) >= epsilon);
+        return result;
+    }
+
+    //убираем 0 с диагонали
+    public int removeZeroesFromDiagonal(){
+        //если можно сделать перестановку - делаем
+        for (int j = 0; j < rowAmount; j++) {
+            for (int i = 0; i < rowAmount - 1; i++) {
+                printComb(combination);
+                //Если соблюден ДУС с учетом перестановки, то возвращаем
+                if (checkSCC(1)){
+                    array = replaceWithCombination();
+                    return 5;
+                }
+                swapElements(i);
+                }
+        }
+        //если перестановку больше нельзя сделать, то проверяем ДУС, если он выполняется - решение с контролем
+        if (checkForZeros(1)){
+            array = replaceWithNotNullCombination();
+            return 6;
+        }
+        else return 7;
+        }
+
+    private double[][] replaceWithNotNullCombination(){
+        double[][] matrix = new double[rowAmount][];
+        for (int i = 0; i < matrix.length; i ++){
+            matrix[i] = array[notNullCombination[i]];
+        }
+        return matrix;
+    }
+
+    public double[][] replaceWithCombination(){
+        double[][] matrix = new double[rowAmount][];
+        for (int i = 0; i < matrix.length; i ++){
+            matrix[i] = array[combination[i]];
+        }
+        return matrix;
+    }
+
+    private void swapElements(int i){
+        int temp = combination[i];
+        combination[i] = combination[i+1];
+        combination[i+1] = temp;
+        double temp2 = sums[i];
+        sums[i] = sums[i+1];
+        sums[i+1] = temp2;
+    }
+
+    private void printComb(int[] comb){
+        for (int value : comb) System.out.print(value + " ");
+        System.out.println();
+    }
+
+    public void setCombination(int[] combination) {
+        this.combination = combination;
     }
 }
