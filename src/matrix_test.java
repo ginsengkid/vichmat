@@ -11,13 +11,10 @@ public class matrix_test {
             System.out.println("FILE NOT FOUND!!!");
         }
         mat.print();
-        //mat.setCombination(new int[]{0,2,1});
-        //printMatrix(mat.replaceWithCombination());
-        //ИСПРАВИТЬ МЕТОД ВЫШЕ
 
         int result;
         double[] array;
-
+        /*
         if (mat.checkForZeros()){
             if (mat.checkSCC()) {
                 array = mat.solveByIterations();
@@ -25,12 +22,11 @@ public class matrix_test {
             }
             else {
                 array = mat.solveByIterationsWithControl();
-                if (array == null) return;
-                else printArray(array);
+                if (array != null) printArray(array);
             }
         }
         else{
-            result = mat.removeZeroesFromDiagonal();
+            result = mat.checkAnswer();
             getResult(result);
             mat.print();
             if (result == 5){
@@ -56,8 +52,19 @@ public class matrix_test {
                     }
                 }
             }
+        }*/
+        result = mat.makeTriangle();
+        mat.print();
+        getResult(result);
+        if(result == 4) {
+            result = mat.checkSolutions();
+            if (result != 4)
+                getResult(result);
+            else {
+                array = mat.findSolutions();
+                printArray(array);
+            }
         }
-
     }
 
     public static void getResult(int result) {
@@ -79,12 +86,4 @@ public class matrix_test {
         System.out.println();
     }
 
-    public static void printMatrix(double[][] matrix){
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[0].length; j++)
-                System.out.print(matrix[i][j] + " ");
-            System.out.println();
-        }
-        System.out.println();
-    }
 }
